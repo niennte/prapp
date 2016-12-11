@@ -1,0 +1,93 @@
+<div class="row">
+
+    <div class="col-md-12">
+
+<?php
+
+setlocale(LC_MONETARY,"en_US");
+$dateFormat = 'd/m/Y';
+
+// CSS class and placeholder text for the title element:
+$timeReport = $this->form->get('report');
+$timeReport->setAttribute('class', 'form-control');
+$timeReport->setAttribute('placeholder', 'Time Report');
+
+// CSS classes for the submit button:
+$submit = $this->form->get('submit');
+$submit->setAttribute('class', 'btn btn-default');
+
+$this->form->setAttribute('action', $this->url('home', ['action' => 'index']));
+$this->form->prepare();
+
+echo $this->form()->openTag($form);
+?>
+
+        <div class="form-group row">
+            <?= $this->formLabel($timeReport) ?>
+        </div>
+
+        <div class="panel panel-default">
+
+            <div class="form-group row">
+                <?= $this->formElementErrors()->render($timeReport, ['class' => 'help-block']) ?>
+            </div>
+
+            <div class="form-group row">
+                <div class="col-md-6">
+                    <?= $this->formElement($timeReport) ?>
+                </div>
+                <div class="col-md-3">
+                    <?= $this->formSubmit($submit) ?>
+                </div>
+            </div>
+        </div>
+
+<?php echo $this->form()->closeTag(); ?>
+
+        <div class="panel panel-default">
+
+<?php if (!$this->payrollReport->getCurrentItemCount()) : ?>
+
+        <div class="col-md-3">
+            <p>No report to display.</p>
+        </div>
+
+<?php else: ?>
+
+            <table class="table table-striped">
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Pay Period</th>
+                    <th>Amount Paid</th>
+                </tr>
+
+<?php foreach ($this->payrollReport as $record) : ?>
+
+                    <tr>
+                        <td>
+                            <?= $this->escapeHtml($record[0]->getEmployeeId()) ?>
+                        </td>
+                        <td>
+                            <?= $this->escapeHtml(date($dateFormat, strtotime($record[0]->getPayPeriodStartDate()))) ?>
+                            -
+                            <?= $this->escapeHtml(date($dateFormat, strtotime($record[0]->getPayPeriodEndDate()))) ?>
+                        </td>
+                        <td>
+                            <?= $this->escapeHtml(money_format("$%i", $record['amount_paid'])) ?>
+                        </td>
+                    </tr>
+
+<?php endforeach; ?>
+
+            </table>
+
+            <?= $this->paginationControl($payrollReport,
+                'Sliding',
+                'application/partial/paginator',
+                array('route' => 'application')); ?>
+
+<?php endif; ?>
+
+        </div>
+    </div>
+</div>
