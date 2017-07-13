@@ -20,7 +20,8 @@
         "zendframework/zend-mvc-form": "^1.0",
         "doctrine/doctrine-orm-module": "dev-master as 1.0.9",
         "doctrine/doctrine-module": "dev-master",
-        "doctrine/migrations": "^1.4"
+        "doctrine/migrations": "^1.4",
+        "zendframework/zend-test": "^3.1"
     },
     "autoload": {
         "psr-4": {

@@ -53,7 +53,8 @@ abstract class AbstractSelfMappingModel
             $propName = $prop->getName();
 
             if ($prop->getDeclaringClass()->name == get_class($this)) {
-                $this->$propName = $array[self::fromCamelCase($propName)];
+                $this->$propName = isset($array[self::fromCamelCase($propName)]) ?
+                    $array[self::fromCamelCase($propName)]: null;
             }
         }
     }

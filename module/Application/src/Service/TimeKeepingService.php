@@ -3,6 +3,7 @@ namespace Application\Service;
 
 use Application\Entity\TimeCard;
 use Application\Model\TimeReport;
+use Application\Model\Factory\TimeReportFactory;
 use Doctrine\ORM\EntityManager;
 
 use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator as DoctrineAdapter;
@@ -34,6 +35,14 @@ class TimeKeepingService
     }
 
     /**
+     * @param mixed $entityManager
+     */
+    public function setEntityManager($entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
+    /**
      * @var
      */
     private $serviceWarnings;
@@ -46,21 +55,26 @@ class TimeKeepingService
     /**
      *
      * CSV Upload handler
-     * Pass file input to the models,
-     * get models to populate,
-     * validate, and save themselves,
-     * report result
+     * Parse the CSV and load into the model
      *
      * @param $csvUpload
      */
     public function handleTimeReportUpload($csvUpload) {
         try {
-            $timeReport = TimeReport::fromCsv($csvUpload, $this->entityManager);
+            $timeReport = TimeReportFactory::constructFromCsv($csvUpload, $this->entityManager);
         } catch (Exception $e) {
             $this->setServiceErrors($e->getMessage());
             return;
         }
+        $this->handleSaveTimeReport($timeReport);
+    }
 
+    /**
+     *
+     * Report save handler
+     * Validate models and save data.
+     */
+    public function handleSaveTimeReport(TimeReport $timeReport) {
         if ($timeReport->isValid()) {
             $timeReport->save();
         } else {

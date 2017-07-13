@@ -6,7 +6,6 @@ use Application\Repository\TimeKeepingRepository;
 use Doctrine\ORM\EntityManager;
 
 use Exception;
-use SplFileObject;
 
 
 /**
@@ -44,63 +43,21 @@ class TimeReport
 
         $this->reportId = $reportId;
 
-        foreach ($records as $row) {
-            $timeCard = new TimeCard();
-            $timeCard->exchangeArray($row);
-            $timeCard->setTimeReportId($reportId);
+        if (is_array($records)) {
+            foreach ($records as $row) {
+                $timeCard = new TimeCard();
+                $timeCard->exchangeArray($row);
+                $timeCard->setTimeReportId($reportId);
 
-            // Skip invalid models before hitting repository
-            if ($error = $timeCard->getErrors()) {
-                $this->setWarnings('Skipping record(s): ' . $error);
-                continue;
+                // Skip invalid models before hitting repository
+                if ($error = $timeCard->getErrors()) {
+                    $this->setWarnings('Skipping record(s): ' . $error);
+                    continue;
+                }
+
+                $this->timeCards[] = $timeCard;
             }
-            $this->timeCards[] = $timeCard;
         }
-    }
-
-
-    /**
-     *
-     * Construct an instance of self populated from a CSV file.
-     * Pass entity manager to the constructor
-     *
-     * @param $CSV
-     * @param EntityManager|null $entityManager
-     * @return static
-     * @throws Exception
-     * @internal param EntityManager|null $entityManager
-     */
-    public static function fromCsv($CSV, EntityManager $entityManager) {
-
-        try {
-            $file = new SplFileObject($CSV);
-        } catch (Exception $e) {
-            throw new Exception("Error: " . $e->getMessage());
-        }
-
-        $file->setFlags(
-            SplFileObject::READ_CSV |
-            SplFileObject::SKIP_EMPTY |
-            SplFileObject::READ_AHEAD
-        );
-        $CSVHeaders = null;
-        foreach ($file as $row) {
-            if ($CSVHeaders === null) {
-                $CSVHeaders = $row;
-                $CSVHeaders = str_replace(" ", "_", $CSVHeaders);
-                continue;
-            }
-
-            if (count($CSVHeaders) != count($row)) {
-                throw new Exception("Error: CSV not well formed.");
-            }
-            $records[] = array_combine($CSVHeaders, $row);
-        }
-
-        $CSVFooter = array_pop($records);
-        $reportId = (int) array_values($CSVFooter)[1];
-
-        return new static($reportId, $records, $entityManager);
     }
 
     public function save() {
@@ -116,12 +73,12 @@ class TimeReport
 
     private function validate() {
         if (!$this->getReportId() > 0) {
-            $this->setErrors("Error: Report must have a valid id.");
+            $this->setErrors("Error: Time report must have a valid id.");
             return;
         }
 
         if (!count($this->getTimeCards()) ) {
-            $this->setErrors('Error: Report has no valid records.');
+            $this->setErrors('Error: Time report has no valid records.');
             return;
         }
 
@@ -210,7 +167,7 @@ class TimeReport
      */
     public function getErrors()
     {
-        return array_pop($this->errors);
+        return is_array($this->warnings) ? array_pop($this->errors) : null;
     }
 
     /**
@@ -227,7 +184,7 @@ class TimeReport
      */
     public function getWarnings()
     {
-        return array_pop($this->warnings);
+        return is_array($this->warnings) ? array_pop($this->warnings) : null;
     }
 
     /**
