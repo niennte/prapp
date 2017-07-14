@@ -1,34 +1,33 @@
 <?php
 namespace Application\Repository;
 
-use Application\Entity\TimeKeepingDataRecord;
+use Application\Entity\TimeReport as TimeReportEntity;
+use Application\Entity\Payroll as PayrollEntity;
+use Application\Entity\TimeCard as TimeCardEntity;
+use Application\Model\TimeReport;
 use Application\Model\TimeCard;
+
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
+
 
 /**
  * Class TimeKeepingRepository
- * Repository for entity TimeKeepingData.
  *
  * @package Application\Repository
  */
 class TimeKeepingRepository extends EntityRepository
 {
-    /**
-     * Compose a payroll report query for the paginator.
-     */
-    public function fetchPayrollReportQuery()
+
+    public function fetchPayrollsForPagination()
     {
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
 
         $queryBuilder
-            ->select('data')
-            ->addSelect('SUM(data.hoursWorked)*data.jobGroupEffectiveRate as amount_paid')
-            ->from(TimeKeepingDataRecord::class, 'data')
-            ->groupBy('data.employeeId')
-            ->addGroupBy('data.jobGroupEffectiveRate')
-            ->addGroupBy('data.payPeriodStartDate')
-            ->orderBy('data.employeeId')
-            ->addOrderBy('data.payPeriodStartDate');
+            ->select(['p'])
+            ->from(PayrollEntity::class, 'p')
+            ->addOrderBy('p.employeeId')
+            ->addOrderBy('p.payPeriodStartDate');
 
         return $queryBuilder->getQuery();
     }
@@ -40,27 +39,69 @@ class TimeKeepingRepository extends EntityRepository
      */
     public function fetchTimeReportIsUnique($timeReportId) {
 
-        $queryBuilder = $this->getEntityManager()->createQueryBuilder();
-
-        $result = $queryBuilder
-            ->select('count(data.timeReportId)')
-            ->from(TimeKeepingDataRecord::class, 'data')
-            ->where('data.timeReportId = ?1')
-            ->setParameter('1', (int) $timeReportId)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        return 0 === (int)$result;
+        return null === $this
+                ->getEntityManager()
+                ->getRepository(TimeReportEntity::class)
+                ->find($timeReportId);
     }
 
-    /**
-     *
-     * @param TimeCard $timeCard
-     */
-    public function saveTimeCard(TimeCard $timeCard)
+    public function saveTimeReport(TimeReport $timeReport)
     {
-        $timeCardEntity = TimeKeepingDataRecord::fromModel($timeCard);
-        $this->getEntityManager()->persist($timeCardEntity);
-        $this->getEntityManager()->flush();
+        /*
+         * EntityManager::transactional()
+         * wraps contents of clusire into a transaction,
+         * commits on success,
+         * rolls back with an exception on failure
+         */
+        $this->getEntityManager()->transactional(
+            function(EntityManager $em) use ($timeReport) {
+
+                // Save time report
+                $timeReportEntity = new TimeReportEntity();
+
+                $timeReportEntity
+                ->setId($timeReport->getReportId())
+                ->setDateFiled(date ('Y-m-d', (strtotime('now'))));
+
+                $em->persist($timeReportEntity);
+
+                // Save time cards
+                foreach($timeReport->getTimeCards() as $timeCard) {
+
+                    $timeCardEntity = TimeCardEntity::fromModel($timeCard)
+                        ->setTimeReport($timeReportEntity);
+
+                    if ($timeCard instanceof TimeCard) {
+
+                        // Build and populate payroll model
+                        $payroll = $timeCard->addToPayroll()->getPayroll();
+
+                        // Look for existing entity, create if not found
+                        if (
+                            $payrollEntity = $em
+                            ->getRepository(PayrollEntity::class)
+                            ->find([
+                                'employeeId' => $payroll->getEmployeeId(),
+                                'payPeriodStartDate' => $payroll->getPayPeriodStartDate()
+                            ])
+                        ) {
+                            $payrollEntity
+                                ->setTotalHours(
+                                    $payrollEntity->getTotalHours() + $payroll->getTotalHours()
+                                )
+                                ->setAmountPaid(
+                                    $payrollEntity->getAmountPaid() + $payroll->getAmountPaid()
+                                );
+                        } else {
+                            $payrollEntity = PayrollEntity::fromModel($payroll);
+                        }
+
+                        $em->persist($payrollEntity);
+                        $em->persist($timeCardEntity);
+                    }
+                }
+            }
+        );
     }
+
 }

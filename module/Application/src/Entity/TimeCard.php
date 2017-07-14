@@ -3,25 +3,17 @@ namespace Application\Entity;
 
 use Application\Model\AbstractSelfMappingModel;
 use Doctrine\ORM\Mapping as ORM;
-
 /**
+ * Class TimeCard
  *
- * This class represents an atomic record in the time keeping data store.
- * Stands in place of any number of relational entities managed by the ORM,
- * a noSQL data store interface, or a service.
- *
- * Interfaces with models representing a flat set of well formed data,
- * a wrapper model, and a data view.
+ * @package Application\Entity
  *
  *
  * @ORM\Entity(repositoryClass="\Application\Repository\TimeKeepingRepository")
- * @ORM\Table(name="time_keeping_data")
+ * @ORM\Table(name="time_cards")
  */
-
-
-class TimeKeepingDataRecord extends AbstractSelfMappingModel
+class TimeCard extends AbstractSelfMappingModel
 {
-
     /**
      * @ORM\Id
      * @ORM\Column(name="id")
@@ -50,24 +42,15 @@ class TimeKeepingDataRecord extends AbstractSelfMappingModel
     protected $jobGroup;
 
     /**
-     * @ORM\Column(name="time_report_id")
-     */
-    protected $timeReportId;
-
-    /**
-     * @ORM\Column(name="pay_period_start_date")
-     */
-    protected $payPeriodStartDate;
-
-    /**
-     * @ORM\Column(name="pay_period_end_date")
-     */
-    protected $payPeriodEndDate;
-
-    /**
      * @ORM\Column(name="job_group_effective_rate")
      */
     protected $jobGroupEffectiveRate;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Application\Entity\TimeReport", inversedBy="timeCards")
+     * @ORM\JoinColumn(name="time_report_id", referencedColumnName="id")
+     */
+    protected $timeReport;
 
     /**
      * @return mixed
@@ -80,7 +63,7 @@ class TimeKeepingDataRecord extends AbstractSelfMappingModel
     /**
      * @param mixed $id
      *
-     * @return TimeKeepingDataRecord
+     * @return TimeCard
      */
     public function setId($id)
     {
@@ -99,7 +82,7 @@ class TimeKeepingDataRecord extends AbstractSelfMappingModel
     /**
      * @param mixed $date
      *
-     * @return TimeKeepingDataRecord
+     * @return TimeCard
      */
     public function setDate($date)
     {
@@ -118,7 +101,7 @@ class TimeKeepingDataRecord extends AbstractSelfMappingModel
     /**
      * @param mixed $employeeId
      *
-     * @return TimeKeepingDataRecord
+     * @return TimeCard
      */
     public function setEmployeeId($employeeId)
     {
@@ -137,7 +120,7 @@ class TimeKeepingDataRecord extends AbstractSelfMappingModel
     /**
      * @param mixed $hoursWorked
      *
-     * @return TimeKeepingDataRecord
+     * @return TimeCard
      */
     public function setHoursWorked($hoursWorked)
     {
@@ -156,68 +139,11 @@ class TimeKeepingDataRecord extends AbstractSelfMappingModel
     /**
      * @param mixed $jobGroup
      *
-     * @return TimeKeepingDataRecord
+     * @return TimeCard
      */
     public function setJobGroup($jobGroup)
     {
         $this->jobGroup = $jobGroup;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getTimeReportId()
-    {
-        return $this->timeReportId;
-    }
-
-    /**
-     * @param mixed $timeReportId
-     *
-     * @return TimeKeepingDataRecord
-     */
-    public function setTimeReportId($timeReportId)
-    {
-        $this->timeReportId = $timeReportId;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPayPeriodStartDate()
-    {
-        return $this->payPeriodStartDate;
-    }
-
-    /**
-     * @param mixed $payPeriodStartDate
-     *
-     * @return TimeKeepingDataRecord
-     */
-    public function setPayPeriodStartDate($payPeriodStartDate)
-    {
-        $this->payPeriodStartDate = $payPeriodStartDate;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPayPeriodEndDate()
-    {
-        return $this->payPeriodEndDate;
-    }
-
-    /**
-     * @param mixed $payPeriodEndDate
-     *
-     * @return TimeKeepingDataRecord
-     */
-    public function setPayPeriodEndDate($payPeriodEndDate)
-    {
-        $this->payPeriodEndDate = $payPeriodEndDate;
         return $this;
     }
 
@@ -232,7 +158,7 @@ class TimeKeepingDataRecord extends AbstractSelfMappingModel
     /**
      * @param mixed $jobGroupEffectiveRate
      *
-     * @return TimeKeepingDataRecord
+     * @return TimeCard
      */
     public function setJobGroupEffectiveRate($jobGroupEffectiveRate)
     {
@@ -240,5 +166,23 @@ class TimeKeepingDataRecord extends AbstractSelfMappingModel
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getTimeReport()
+    {
+        return $this->timeReport;
+    }
+
+    /**
+     * @param mixed $timeReport
+     *
+     * @return TimeCard
+     */
+    public function setTimeReport($timeReport)
+    {
+        $this->timeReport = $timeReport;
+        return $this;
+    }
 
 }

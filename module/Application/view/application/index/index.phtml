@@ -3,6 +3,7 @@
     <div class="col-md-12">
 
 <?php
+use Application\Model\Payroll;
 
 setlocale(LC_MONETARY,"en_US");
 $dateFormat = 'd/m/Y';
@@ -61,19 +62,20 @@ echo $this->form()->openTag($form);
                     <th>Amount Paid</th>
                 </tr>
 
-<?php foreach ($this->payrollReport as $record) : ?>
+<?php
 
+foreach ($this->payrollReport as $record) :
+    $recordView = Payroll::fromModel($record)->getPublicArrayCopy();
+?>
                     <tr>
                         <td>
-                            <?= $this->escapeHtml($record[0]->getEmployeeId()) ?>
+                            <?= $this->escapeHtml($recordView['employee_id_to_display']) ?>
                         </td>
                         <td>
-                            <?= $this->escapeHtml(date($dateFormat, strtotime($record[0]->getPayPeriodStartDate()))) ?>
-                            -
-                            <?= $this->escapeHtml(date($dateFormat, strtotime($record[0]->getPayPeriodEndDate()))) ?>
+                            <?= $this->escapeHtml($recordView['pay_period_to_display']) ?>
                         </td>
                         <td>
-                            <?= $this->escapeHtml(money_format("$%i", $record['amount_paid'])) ?>
+                            <?= $this->escapeHtml(money_format("$%i", $recordView['amount_to_display'])) ?>
                         </td>
                     </tr>
 

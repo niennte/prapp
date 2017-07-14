@@ -15,7 +15,7 @@ class RateService
         'B' => 30,
     ];
 
-    public function getForGroup($jobGroup) {
+    public static function getForGroup($jobGroup) {
         return self::RATES_PER_GROUP[$jobGroup];
     }
 }

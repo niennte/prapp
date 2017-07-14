@@ -2,8 +2,8 @@
 
 namespace Application\Model;
 
+use Application\Repository\TimeKeepingRepository;
 use Doctrine\ORM\EntityManager;
-use Application\Entity\TimeKeepingDataRecord;
 
 use Exception;
 use SplFileObject;
@@ -22,7 +22,7 @@ class TimeReport
     /**
      * @var
      */
-    private $reportId;
+    protected $reportId;
     private $timeCards;
     private $errors;
     private $warnings;
@@ -54,7 +54,6 @@ class TimeReport
                 $this->setWarnings('Skipping record(s): ' . $error);
                 continue;
             }
-
             $this->timeCards[] = $timeCard;
         }
     }
@@ -105,9 +104,13 @@ class TimeReport
     }
 
     public function save() {
-        $repository = $this->entityManager->getRepository(TimeKeepingDataRecord::class);
-        foreach ($this->getTimeCards() as $record) {
-            $repository->saveTimeCard($record);
+        $repository = $this->entityManager->getRepository(\Application\Entity\TimeReport::class);
+        try {
+            if ($repository instanceof TimeKeepingRepository) {
+                $repository->saveTimeReport($this);
+            }
+        } catch (Exception $e) {
+            $this->setErrors($e->getMessage());
         }
     }
 
@@ -141,7 +144,7 @@ class TimeReport
 
 
     public function isUnique() {
-        $repository = $this->entityManager->getRepository(TimeKeepingDataRecord::class);
+        $repository = $this->entityManager->getRepository(\Application\Entity\TimeCard::class);
         return $repository->fetchTimeReportIsUnique($this->getReportId());
     }
 

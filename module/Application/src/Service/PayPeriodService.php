@@ -11,17 +11,17 @@ namespace Application\Service;
 class PayPeriodService
 {
 
-    public function getStartDate($date) {
+    public static function getStartDate($date) {
 
-        $dateStamp = $this->dateToTimestamp($date);
+        $dateStamp = self::dateToTimestamp($date);
         $dayOfMonth = date('d', $dateStamp) < 15 ? 1 : 16;
 
         return date('Y', $dateStamp) . "-" . date('m', $dateStamp) . "-" . $dayOfMonth;
     }
 
-    public function getEndDate($date) {
+    public static function getEndDate($date) {
 
-        $dateStamp = $this->dateToTimestamp($date);
+        $dateStamp = self::dateToTimestamp($date);
         if (date('d', $dateStamp) < 15) {
             $dayOfMonth = 15;
         } else {
@@ -41,7 +41,7 @@ class PayPeriodService
         return date('Y', $dateStamp) . "-" . date('m', $dateStamp) . "-" . $dayOfMonth;
     }
 
-    private function dateToTimestamp($date) {
+    public static function dateToTimestamp($date) {
         $date = $date = str_replace('/', '-', $date);
         return strtotime($date);
     }

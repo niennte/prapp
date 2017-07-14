@@ -1,9 +1,9 @@
 <?php
 namespace Application\Service;
 
+use Application\Entity\TimeCard;
 use Application\Model\TimeReport;
 use Doctrine\ORM\EntityManager;
-use Application\Entity\TimeKeepingDataRecord;
 
 use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator as DoctrineAdapter;
 use Doctrine\ORM\Tools\Pagination\Paginator as ORMPaginator;
@@ -69,15 +69,15 @@ class TimeKeepingService
         $this->setServiceWarnings($timeReport->getWarnings());
     }
 
+
     /**
-     * Payroll Report.
-     * Call the ORM's paginator, pass that into Zend paginator to generate front end
-     * Return a collection of Payroll Report objects wrapped into a Zend paginator.
+     * Stub.
      *
      */
     public function getPayrollReport($page, $pageSize) {
-        $repository = $this->entityManager->getRepository(TimeKeepingDataRecord::class);
-        $query = $repository->fetchPayrollReportQuery();
+
+        $repository = $this->entityManager->getRepository(TimeCard::class);
+        $query = $repository->fetchPayrollsForPagination();
         $adapter = new DoctrineAdapter(new ORMPaginator($query, false));
         $paginator = new Paginator($adapter);
         $paginator->setDefaultItemCountPerPage($pageSize);

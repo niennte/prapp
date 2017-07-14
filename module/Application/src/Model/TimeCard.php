@@ -1,10 +1,8 @@
 <?php
-
 namespace Application\Model;
 
+use Application\Model\Factory\PayrollFactory;
 use Application\Service\RateService;
-use Application\Service\PayPeriodService;
-use Zend\Stdlib\ArrayObject;
 
 /**
  * Class TimeCard
@@ -21,17 +19,10 @@ class TimeCard extends AbstractSelfMappingModel
     protected $hoursWorked;
     protected $jobGroup;
     protected $timeReportId;
-    protected $payPeriodStartDate;
-    protected $payPeriodEndDate;
     protected $jobGroupEffectiveRate;
 
-    private $payPeriodService;
-    private $rateService;
+    private $payroll;
 
-    public function __construct() {
-        $this->payPeriodService = new PayPeriodService();
-        $this->rateService = new RateService();
-    }
 
     /**
      * @param mixed $timeReportId
@@ -49,14 +40,8 @@ class TimeCard extends AbstractSelfMappingModel
      * @return void|static
      */
     public function exchangeArray($data) {
-
-        // populate with data from input
         parent::exchangeArray($data);
-
-        // add data from other services
-        $this->payPeriodStartDate = $this->payPeriodService->getStartDate($data['date']);
-        $this->payPeriodEndDate = $this->payPeriodService->getEndDate($data['date']);
-        $this->jobGroupEffectiveRate = $this->rateService->getForGroup($data['job_group']);
+        $this->jobGroupEffectiveRate = $this->getEffectiveRate();
     }
 
     /**
@@ -65,9 +50,25 @@ class TimeCard extends AbstractSelfMappingModel
      * @return array
      */
     public function getArrayCopy() {
-
         // parent's method will keep data as expected by data store
         return parent::toArray();
+    }
+
+    /**
+     * @return $this
+     */
+    public function addToPayroll() {
+        $payroll = PayrollFactory::fromTimeCard($this);
+        $this->setPayroll($payroll);
+        return $this;
+    }
+
+    public function getEffectiveRate() {
+        return RateService::getForGroup($this->getJobGroup());
+    }
+
+    public function updatePayrollAmountPaid() {
+        return $this->getHoursWorked() * $this->getEffectiveRate();
     }
 
     /**
@@ -102,6 +103,139 @@ class TimeCard extends AbstractSelfMappingModel
         $key = array_search(null, $fields);
         return $key ? false : true;
 
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     *
+     * @return TimeCard
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDate()
+    {
+        return $this->date;
+    }
+
+    /**
+     * @param mixed $date
+     *
+     * @return TimeCard
+     */
+    public function setDate($date)
+    {
+        $this->date = $date;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEmployeeId()
+    {
+        return $this->employeeId;
+    }
+
+    /**
+     * @param mixed $employeeId
+     *
+     * @return TimeCard
+     */
+    public function setEmployeeId($employeeId)
+    {
+        $this->employeeId = $employeeId;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getHoursWorked()
+    {
+        return $this->hoursWorked;
+    }
+
+    /**
+     * @param mixed $hoursWorked
+     *
+     * @return TimeCard
+     */
+    public function setHoursWorked($hoursWorked)
+    {
+        $this->hoursWorked = $hoursWorked;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getJobGroup()
+    {
+        return $this->jobGroup;
+    }
+
+    /**
+     * @param mixed $jobGroup
+     *
+     * @return TimeCard
+     */
+    public function setJobGroup($jobGroup)
+    {
+        $this->jobGroup = $jobGroup;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getJobGroupEffectiveRate()
+    {
+        return $this->jobGroupEffectiveRate;
+    }
+
+    /**
+     * @param mixed $jobGroupEffectiveRate
+     *
+     * @return TimeCard
+     */
+    public function setJobGroupEffectiveRate($jobGroupEffectiveRate)
+    {
+        $this->jobGroupEffectiveRate = $jobGroupEffectiveRate;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPayroll()
+    {
+        return $this->payroll;
+    }
+
+    /**
+     * @param mixed $payroll
+     *
+     * @return TimeCard
+     */
+    public function setPayroll($payroll)
+    {
+        $this->payroll = $payroll;
+        return $this;
     }
 
 }

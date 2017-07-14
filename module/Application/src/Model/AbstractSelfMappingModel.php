@@ -61,14 +61,17 @@ abstract class AbstractSelfMappingModel
 
     /**
      * Copy to an array protected properties declared within this class.
+     *
+     * @param int $filter
+     *
      * @return array
      */
 
-    public function toArray()
+    public function toArray($filter = ReflectionProperty::IS_PROTECTED)
     {
         $array = [];
 
-        foreach ($this->reflect()->getProperties(ReflectionProperty::IS_PROTECTED) as $prop) {
+        foreach ($this->reflect()->getProperties($filter) as $prop) {
             $propName = $prop->getName();
 
             if ($prop->getDeclaringClass()->name == get_class($this)) {
