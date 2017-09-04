@@ -11,16 +11,6 @@
  * file.
  */
 
-use Doctrine\DBAL\Driver\PDOSqlite\Driver as PDOSqliteDriver;
-// \PDOSqlite\Driver as PDOSqliteDriver;
-
-/*return [
-    'db' => [
-        'driver' => 'Pdo',
-        'dsn' => sprintf('sqlite:%s/data/db.db', realpath(getcwd())),
-    ],
-];*/
-
 return [
     'doctrine' => [
         // migrations configuration
@@ -32,37 +22,5 @@ return [
                 'table'     => 'migrations',
             ],
         ],
-        'connection' => [
-            'orm_default' => [
-                'driverClass' => PDOSqliteDriver::class,
-                'params' => ['path' =>  __DIR__.'/../../data/db.db'],
-            ],
-        ],
     ],
 ];
-
-
-
-/*
- 'driver' => [
-            // defines an annotation driver with two paths, and names it `my_annotation_driver`
-            'my_annotation_driver' => [
-                'class' => \Doctrine\ORM\Mapping\Driver\AnnotationDriver::class,
-                'cache' => 'array',
-                'paths' => [
-                    'path/to/my/entities',
-                    'another/path',
-                ],
-            ],
- */
-
-/*return [
-    'doctrine' => [
-        'connection' => [
-            'orm_default' => [
-                'driverClass' => PDOSqliteDriver::class,
-                'params' => ['path' =>  __DIR__.'/../../data/db.db'],
-            ],
-        ],
-    ],
-];*/

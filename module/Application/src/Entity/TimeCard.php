@@ -2,7 +2,10 @@
 namespace Application\Entity;
 
 use Application\Model\AbstractSelfMappingModel;
+use Application\Service\PayPeriodService;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\MApping\SequenceGenerator;
 /**
  * Class TimeCard
  *
@@ -15,14 +18,16 @@ use Doctrine\ORM\Mapping as ORM;
 class TimeCard extends AbstractSelfMappingModel
 {
     /**
-     * @ORM\Id
-     * @ORM\Column(name="id")
-     * @ORM\GeneratedValue
+     * @ORM\ID
+     * @GeneratedValue(strategy="IDENTITY")
+     * @ORM\Column(type="integer", options={"unsigned":true})
+     * @SequenceGenerator(sequenceName="time_card_seq", initialValue=1, allocationSize=10)
      */
     protected $id;
 
+
     /**
-     * @ORM\Column(name="date")
+     * @ORM\Column(name="date", type="date")
      */
     protected $date;
 
@@ -51,6 +56,17 @@ class TimeCard extends AbstractSelfMappingModel
      * @ORM\JoinColumn(name="time_report_id", referencedColumnName="id")
      */
     protected $timeReport;
+
+
+
+    public static function fromModel($model){
+        $self = parent::fromModel($model);
+        $dateStamp = PayPeriodService::dateToTimestamp($model->getDate());
+        $date = date('Y-m-d\TH:i:sP', $dateStamp);
+        $self->date = new \DateTime($date);
+        return $self;
+    }
+
 
     /**
      * @return mixed
