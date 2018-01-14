@@ -1,7 +1,23 @@
-zf:
-  build: .
-  dockerfile: Dockerfile
-  ports:
-   - "8080:80"
-  volumes:
-   - .:/var/www
+version: '2.1'
+
+services:
+  payroll-app:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - $PWD:/var/www
+    links:
+      - postgres
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    ports:
+          - "5432:5432"
+    environment:
+     - POSTGRES_PASSWORD=mysecretpassword
+   
+   
+   
